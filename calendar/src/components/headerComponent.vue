@@ -1,5 +1,6 @@
 <script setup>
-import { ref, inject } from 'vue'
+import { ref, inject, watch } from 'vue'
+
 const MONTHS = {
     Jan: "January",
     Feb: "February",
@@ -14,15 +15,36 @@ const MONTHS = {
     Nov: "November",
     Dec: "December"
 }
-const state = inject('store') // accessing state using inject function
+const store = inject('store');
+const state = store.state
 const [_, month, __, year] = state.value.date.dateString.split(' ') // extracting month & year from dateString
 const current = ref({
-    month: MONTHS[month], // getting month fullname from MONTHS object using months first 3 initials
+    month: MONTHS[month], // getting month fullname from MONTHS object using monts first 3 initials
     year
 })
 console.log(_);
 console.log(__);
+
+// watching date so that we can update current 👇🏻
+watch(() => state.value.date, (updatedDate) => {
+    const [_, month, __, year] = updatedDate.dateString.split(' ') // extracting updated month and year
+    console.log(_);
+    console.log(__);
+    current.value = {
+        month: MONTHS[month],
+        year
+    }
+})
+const handleClick = (direction) => {
+    store.dispatch({
+        type: 'updateDate',
+        payload: { direction: direction }
+    });
+};
+
+
 </script>
+
 
 <template>
     <div class="header">
@@ -32,13 +54,13 @@ console.log(__);
             </div>
         </div>
         <div class="wrapper">
-            <div class="left-chev chev">
+            <div class="left-chev chev" @click="() => handleClick('prev-month')">
                 <img :src="chev" alt="left-chevron">
             </div>
             <div class="month">
                 <h2>{{ current.month }}</h2> <!-- Using month from current state above -->
             </div>
-            <div class="right-chev chev">
+            <div class="right-chev chev" @click="() => handleClick('next-month')">
                 <img :src="chev" alt="right-chevron">
             </div>
         </div>
@@ -93,4 +115,5 @@ console.log(__);
             transform: rotate(180deg);
         }
     }
-}</style>
+}
+</style>
